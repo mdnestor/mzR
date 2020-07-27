@@ -225,8 +225,8 @@ Rcpp::DataFrame RcppIdent::getModInfo(  )
 	       Rcpp::_["name"]	= name,
 	       Rcpp::_["mass"]	= mass,
 	       Rcpp::_["location"]	= loc,
-	       Rcpp::_["peptide_ref"]	= peptide_ref,
-	       Rcpp::_["SII_ID"]	= SII_ID);
+	       Rcpp::_["peptide_ref"]	= peptide_ref);
+	       //Rcpp::_["SII_ID"]	= SII_ID);
 
 }
 
