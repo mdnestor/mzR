@@ -108,8 +108,8 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
     std::vector<std::string> pre;
     std::vector<int> start;
     std::vector<int> end;
-    std::vector<std::string> SII_ID;
     std::vector<std::string> peptide_ref;
+    std::vector<std::string> SII_ID;
     std::vector<std::string> DBSequenceID;
     std::vector<std::string> DBseq;
     std::vector<int> DBSequenceLen;
@@ -135,8 +135,8 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
 		post.push_back(string(1, spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->post));
 		start.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->start);
 		end.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->end);
+		peptide_ref.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptidePtr->id);
 		SII_ID.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->id);
-		peptide_ref.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->peptide_ref);
 		if(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->dbSequencePtr.get()!=0)
 		{
 		    DBSequenceID.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->dbSequencePtr->accession);
@@ -178,8 +178,8 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
 	       Rcpp::_["pre"]	= pre,
 	       Rcpp::_["start"]	= start,
 	       Rcpp::_["end"]	= end,
-	       Rcpp::_["SII_ID"]	= SII_ID,
 	       Rcpp::_["peptide_ref"]	= peptide_ref,
+	       Rcpp::_["SII_ID"]	= SII_ID,
 	       Rcpp::_["DatabaseAccess"]	= DBSequenceID,
 	       Rcpp::_["DBseqLength"]	= DBSequenceLen,
 	       Rcpp::_["DatabaseSeq"]	= DBseq,
@@ -196,6 +196,7 @@ Rcpp::DataFrame RcppIdent::getModInfo(  )
     vector<string> name;
     vector<double> mass;
     vector<int> loc;
+    vector<string> peptide_ref;
     vector<string> SII_ID;
 
     for (size_t i = 0; i < spectrumIdResult.size(); i++)
@@ -211,6 +212,7 @@ Rcpp::DataFrame RcppIdent::getModInfo(  )
 		    name.push_back(cvTermInfo(spectrumIdResult[i]->spectrumIdentificationItem[k]->peptidePtr->modification[j]->cvParams[0].cvid).name);
 		    mass.push_back(spectrumIdResult[i]->spectrumIdentificationItem[k]->peptidePtr->modification[j]->monoisotopicMassDelta);
 		    loc.push_back(spectrumIdResult[i]->spectrumIdentificationItem[k]->peptidePtr->modification[j]->location);
+		    peptide_ref.push_back(spectrumIdResult[i]->spectrumIdentificationItem[k]->peptidePtr->id);
 		    SII_ID.push_back(spectrumIdResult[i]->spectrumIdentificationItem[k]->id);
 		}
 	    }
@@ -223,6 +225,7 @@ Rcpp::DataFrame RcppIdent::getModInfo(  )
 	       Rcpp::_["name"]	= name,
 	       Rcpp::_["mass"]	= mass,
 	       Rcpp::_["location"]	= loc,
+	       Rcpp::_["peptide_ref"]	= peptide_ref,
 	       Rcpp::_["SII_ID"]	= SII_ID);
 
 }
