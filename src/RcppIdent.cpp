@@ -16,15 +16,15 @@ Rcpp::List RcppIdent::getIDInfo(  )
   provider = (mzid->provider.contactRolePtr.get()!=0?mzid->provider.contactRolePtr.get()->name():"");
   date = mzid->creationDate;
   vector<AnalysisSoftwarePtr> as = mzid->analysisSoftwareList;
-  
+
   vector<SearchDatabasePtr> sdb = mzid->dataCollection.inputs.searchDatabase;
   Rcpp::StringVector software(as.size());
-  
+
   for (size_t i = 0; i < as.size(); i++)
   {
     software[i] = as[i]->name + " " + as[i]->version + " " + (as[i]->contactRolePtr.get()!=0?as[i]->contactRolePtr->contactPtr->name:"") ;
   }
-  
+
   vector<SpectrumIdentificationProtocolPtr> sip = mzid->analysisProtocolCollection.spectrumIdentificationProtocol;
   string fragmentTolerance = "";
   string parentTolerance = "";
@@ -32,20 +32,20 @@ Rcpp::List RcppIdent::getIDInfo(  )
   {
     fragmentTolerance = sip[0]->fragmentTolerance.cvParams[0].value + " " + sip[0]->fragmentTolerance.cvParam(MS_search_tolerance_plus_value).unitsName();
   }
-  
+
   if(!sip[0]->parentTolerance.empty())
   {
     parentTolerance = sip[0]->parentTolerance.cvParams[0].value + " " + sip[0]->parentTolerance.cvParam(MS_search_tolerance_plus_value).unitsName();
   }
-  
+
   vector<SearchModificationPtr> sm = sip[0]->modificationParams;
-  
+
   Rcpp::StringVector mod(sm.size());
   for(size_t i = 0; i < sm.size(); i++)
   {
     mod[i] = cvTermInfo(sm[i]->cvParams[0].cvid).name;
   }
-  
+
   vector<EnzymePtr> enz = sip[0]->enzymes.enzymes;
   Rcpp::List enzymes;
   Rcpp::StringVector name(enz.size());
@@ -53,7 +53,7 @@ Rcpp::List RcppIdent::getIDInfo(  )
   Rcpp::StringVector cTermGain(enz.size());
   Rcpp::StringVector minDistance(enz.size());
   Rcpp::StringVector missedCleavages(enz.size());
-  
+
   for (size_t i = 0; i < enz.size(); i++)
   {
     name[i] = cvTermInfo(cleavageAgent(*enz[i].get())).name;
@@ -62,7 +62,7 @@ Rcpp::List RcppIdent::getIDInfo(  )
     minDistance[i] = enz[i]->minDistance;
     missedCleavages[i] = enz[i]->missedCleavages;
   }
-  
+
   enzymes = Rcpp::List::create(
     Rcpp::_["name"]  = name,
     Rcpp::_["nTermGain"]  = nTermGain,
@@ -70,14 +70,14 @@ Rcpp::List RcppIdent::getIDInfo(  )
     Rcpp::_["minDistance"]  = minDistance,
     Rcpp::_["missedCleavages"]  = missedCleavages
   );
-  
+
   vector<SpectraDataPtr> sd = mzid->dataCollection.inputs.spectraData;
   Rcpp::StringVector spectra(sd.size());
   for (size_t i = 0; i < sd.size(); i++)
   {
     spectra[i] = sd[i]->location;
   }
-  
+
   return Rcpp::List::create(
     Rcpp::_["FileProvider"]	= provider,
     Rcpp::_["CreationDate"]	= date,
@@ -88,13 +88,13 @@ Rcpp::List RcppIdent::getIDInfo(  )
     Rcpp::_["enzymes"]	= enzymes,
     Rcpp::_["SpectraSource"]	= spectra
   );
-  
+
 }
 
 Rcpp::DataFrame RcppIdent::getPsmInfo(  )
 {
   vector<SpectrumIdentificationResultPtr> spectrumIdResult = mzid->analysisCollection.spectrumIdentification[0]->spectrumIdentificationListPtr->spectrumIdentificationResult;
-  
+
   std::vector<std::string> spectrumID;
   std::vector<std::string> SIR_ID;
   std::vector<std::string> SII_ID;
@@ -111,19 +111,18 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
   std::vector<std::string> pre;
   std::vector<int> start;
   std::vector<int> end;
-  std::vector<std::string> peptide_ref;
   std::vector<std::string> DBSequenceID;
   std::vector<std::string> DBseq;
   std::vector<int> DBSequenceLen;
   std::vector<std::string> DBdesc;
-  
+
   for (size_t i = 0; i < spectrumIdResult.size(); i++)
   {
     for(size_t j = 0; j < spectrumIdResult[i]->spectrumIdentificationItem.size(); j++)
     {
       for(size_t k = 0; k < spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr.size(); k++)
       {
-        
+
         spectrumID.push_back(spectrumIdResult[i]->spectrumID);
         SIR_ID.push_back(spectrumIdResult[i]->id);
         SII_ID.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->id);
@@ -140,7 +139,6 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
         post.push_back(string(1, spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->post));
         start.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->start);
         end.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->end);
-        peptide_ref.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptidePtr->id);
         if(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->dbSequencePtr.get()!=0)
         {
           DBSequenceID.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->peptideEvidencePtr[k]->dbSequencePtr->accession);
@@ -161,13 +159,13 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
           DBseq.push_back("");
           DBdesc.push_back("");
         }
-        
+
       }
     }
   }
-  
-  
-  
+
+
+
   return Rcpp::DataFrame::create(
     Rcpp::_["spectrumID"]	= spectrumID,
     Rcpp::_["SIR_ID"]	= SIR_ID,
@@ -185,7 +183,6 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
     Rcpp::_["pre"]	= pre,
     Rcpp::_["start"]	= start,
     Rcpp::_["end"]	= end,
-    Rcpp::_["peptide_ref"]	= peptide_ref,
     Rcpp::_["DatabaseAccess"]	= DBSequenceID,
     Rcpp::_["DBseqLength"]	= DBSequenceLen,
     Rcpp::_["DatabaseSeq"]	= DBseq,
@@ -195,7 +192,7 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
 
 Rcpp::DataFrame RcppIdent::getModInfo(  )
 {
-  
+
   vector<SpectrumIdentificationResultPtr> spectrumIdResult = mzid->analysisCollection.spectrumIdentification[0]->spectrumIdentificationListPtr->spectrumIdentificationResult;
   vector<string> spectrumID;
   vector<string> SIR_ID;
@@ -205,7 +202,7 @@ Rcpp::DataFrame RcppIdent::getModInfo(  )
   vector<string> name;
   vector<double> mass;
   vector<int> loc;
-  
+
   for (size_t i = 0; i < spectrumIdResult.size(); i++)
   {
     for(size_t k = 0; k < spectrumIdResult[i]->spectrumIdentificationItem.size() ; k++)
@@ -226,7 +223,7 @@ Rcpp::DataFrame RcppIdent::getModInfo(  )
       }
     }
   }
-  
+
   return Rcpp::DataFrame::create(
     Rcpp::_["spectrumID"]	= spectrumID,
     Rcpp::_["SIR_ID"]	= SIR_ID,
@@ -236,7 +233,7 @@ Rcpp::DataFrame RcppIdent::getModInfo(  )
     Rcpp::_["name"]	= name,
     Rcpp::_["mass"]	= mass,
     Rcpp::_["location"]	= loc);
-  
+
 }
 
 Rcpp::DataFrame RcppIdent::getSubInfo(  )
@@ -247,11 +244,11 @@ Rcpp::DataFrame RcppIdent::getSubInfo(  )
   std::vector<char> originalResidue;
   std::vector<char> replacementResidue;
   std::vector<int> loc;
-  
-  
+
+
   for (size_t i = 0; i < spectrumIdResult.size(); i++)
   {
-    
+
     if(spectrumIdResult[i]->spectrumIdentificationItem[0]->peptidePtr->substitutionModification.size() > 0)
     {
       for(size_t j = 0 ; j < spectrumIdResult[i]->spectrumIdentificationItem[0]->peptidePtr->substitutionModification.size(); j++)
@@ -264,7 +261,7 @@ Rcpp::DataFrame RcppIdent::getSubInfo(  )
       }
     }
   }
-  
+
   return Rcpp::DataFrame::create(
     Rcpp::_["spectrumID"]	= spectrumID,
     Rcpp::_["sequence"]	= seq,
@@ -272,7 +269,7 @@ Rcpp::DataFrame RcppIdent::getSubInfo(  )
     Rcpp::_["replacementResidue"]	= replacementResidue,
     Rcpp::_["location"]	= loc
   );
-  
+
 }
 
 Rcpp::DataFrame RcppIdent::getScore(  ) {
@@ -281,7 +278,7 @@ Rcpp::DataFrame RcppIdent::getScore(  ) {
   vector<string> names;
   int count = 0;
   int nCvParams = 0;
-  
+
   for (size_t i = 0; i < spectrumIdResult[0]->spectrumIdentificationItem[0]->cvParams.size(); i++) {
     if (!spectrumIdResult[0]->spectrumIdentificationItem[0]->cvParams[i].value.empty()) {
       count++;
@@ -299,7 +296,7 @@ Rcpp::DataFrame RcppIdent::getScore(  ) {
         for (size_t n = 0; n < spectrumIdResult[i]->spectrumIdentificationItem[k]->peptideEvidencePtr.size(); n++) {
           spectrumID.push_back(spectrumIdResult[i]->spectrumID);
           count = 0;
-          
+
           // The original loop iterated to j <
           // spectrumIdResult[i]->spectrumIdentificationItem[k]->cvParams.size()
           // which failed when some SpectrumIdentificationItem
@@ -314,17 +311,17 @@ Rcpp::DataFrame RcppIdent::getScore(  ) {
         }
       }
     }
-    
+
     Rcpp::List res(score.size() + 1);
     names.insert(names.begin(), "spectrumID");
     res[0] = Rcpp::wrap(spectrumID);
     for(size_t i = 0; i < score.size(); i++) {
       res[i + 1] = Rcpp::wrap(score[i]);
     }
-    
+
     res.attr("names") = names;
     Rcpp::DataFrame out(res);
-    
+
     return out;
   }
 }
@@ -335,7 +332,7 @@ Rcpp::DataFrame RcppIdent::getSpecParams(  )
   vector<string> spectrumID;
   vector<string> names;
   int count = 0;
-  
+
   for(size_t i = 0; i < spectrumIdResult[0]->cvParams.size(); i++)
   {
     if(!spectrumIdResult[0]->cvParams[i].value.empty())
@@ -352,7 +349,7 @@ Rcpp::DataFrame RcppIdent::getSpecParams(  )
   else
   {
     vector<vector<string> > score(count);
-    
+
     for (size_t i = 0; i < spectrumIdResult.size(); i++)
     {
       spectrumID.push_back(spectrumIdResult[i]->spectrumID);
@@ -366,40 +363,40 @@ Rcpp::DataFrame RcppIdent::getSpecParams(  )
         }
       }
     }
-    
+
     Rcpp::List res(score.size() + 1);
-    
+
     names.insert(names.begin(), "spectrumID");
-    
+
     res[0] = Rcpp::wrap(spectrumID);
-    
+
     for(size_t i = 0; i < score.size(); i++)
     {
       res[i + 1] = Rcpp::wrap(score[i]);
     }
-    
+
     res.attr("names") = names;
     Rcpp::DataFrame out(res);
-    
+
     return out;
   }
 }
 
 Rcpp::List RcppIdent::getPara(  )
 {
-  
+
   std::vector<SpectrumIdentificationProtocolPtr> sip = mzid->analysisProtocolCollection.spectrumIdentificationProtocol;
   std::vector<std::string> names, values;
-  
+
   names.push_back("searchType");
   values.push_back(underscore(cvTermInfo(sip[0]->searchType.cvid).name));
-  
+
   for(int i = 0 ; i < sip[0]->additionalSearchParams.cvParams.size(); i++)
   {
     names.push_back(underscore(cvTermInfo(sip[0]->additionalSearchParams.cvParams[i].cvid).name));
     values.push_back("true");
   }
-  
+
   for(int i = 0; i < sip[0]->additionalSearchParams.userParams.size(); i++)
   {
     names.push_back(underscore(sip[0]->additionalSearchParams.userParams[i].name));
@@ -412,9 +409,9 @@ Rcpp::List RcppIdent::getPara(  )
       values.push_back(sip[0]->additionalSearchParams.userParams[i].value);
     }
   }
-  
+
   Rcpp::List res(names.size());
-  
+
   for (size_t i = 0; i < names.size(); i++)
   {
     if (isNumber(values[i]))
@@ -430,7 +427,7 @@ Rcpp::List RcppIdent::getPara(  )
       res[i] = Rcpp::wrap(values[i]);
     }
   }
-  
+
   res.attr("names") = names;
   return res;
 }
@@ -438,7 +435,7 @@ Rcpp::List RcppIdent::getPara(  )
 Rcpp::DataFrame RcppIdent::getDB(  )
 {
   vector<SearchDatabasePtr> sdb = mzid->dataCollection.inputs.searchDatabase;
-  
+
   std::vector<std::string> dbLocation;
   std::vector<std::string> dbID;
   std::vector<std::string> dbName;
@@ -462,6 +459,6 @@ Rcpp::DataFrame RcppIdent::getDB(  )
     Rcpp::_["numResidues"]  = numResidues,
     Rcpp::_["version"]  = dbVersion
   );
-  
+
   return database;
 }
