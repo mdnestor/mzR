@@ -96,8 +96,6 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
   vector<SpectrumIdentificationResultPtr> spectrumIdResult = mzid->analysisCollection.spectrumIdentification[0]->spectrumIdentificationListPtr->spectrumIdentificationResult;
 
   std::vector<std::string> spectrumID;
-  std::vector<std::string> SIR_ID;
-  std::vector<std::string> SII_ID;
   std::vector<int> chargeState;
   std::vector<int> rank;
   std::vector<double> experimentalMassToCharge;
@@ -124,8 +122,6 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
       {
 
         spectrumID.push_back(spectrumIdResult[i]->spectrumID);
-        SIR_ID.push_back(spectrumIdResult[i]->id);
-        SII_ID.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->id);
         chargeState.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->chargeState);
         rank.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->rank);
         passThreshold.push_back(spectrumIdResult[i]->spectrumIdentificationItem[j]->passThreshold);
@@ -168,8 +164,6 @@ Rcpp::DataFrame RcppIdent::getPsmInfo(  )
 
   return Rcpp::DataFrame::create(
     Rcpp::_["spectrumID"]	= spectrumID,
-    Rcpp::_["SIR_ID"]	= SIR_ID,
-    Rcpp::_["SII_ID"]	= SII_ID,
     Rcpp::_["chargeState"]	= chargeState,
     Rcpp::_["rank"]	= rank,
     Rcpp::_["passThreshold"]	= passThreshold,
@@ -195,8 +189,6 @@ Rcpp::DataFrame RcppIdent::getModInfo(  )
 
   vector<SpectrumIdentificationResultPtr> spectrumIdResult = mzid->analysisCollection.spectrumIdentification[0]->spectrumIdentificationListPtr->spectrumIdentificationResult;
   vector<string> spectrumID;
-  vector<string> SIR_ID;
-  vector<string> SII_ID;
   vector<string> seq;
   vector<string> peptide_ref;
   vector<string> name;
@@ -212,8 +204,6 @@ Rcpp::DataFrame RcppIdent::getModInfo(  )
         for(size_t j = 0 ; j < spectrumIdResult[i]->spectrumIdentificationItem[k]->peptidePtr->modification.size(); j++)
         {
           spectrumID.push_back(spectrumIdResult[i]->spectrumID);
-          SIR_ID.push_back(spectrumIdResult[i]->id);
-          SII_ID.push_back(spectrumIdResult[i]->spectrumIdentificationItem[k]->id);
           seq.push_back(spectrumIdResult[i]->spectrumIdentificationItem[k]->peptidePtr->peptideSequence);
           peptide_ref.push_back(spectrumIdResult[i]->spectrumIdentificationItem[k]->peptidePtr->id);
           name.push_back(cvTermInfo(spectrumIdResult[i]->spectrumIdentificationItem[k]->peptidePtr->modification[j]->cvParams[0].cvid).name);
@@ -226,8 +216,6 @@ Rcpp::DataFrame RcppIdent::getModInfo(  )
 
   return Rcpp::DataFrame::create(
     Rcpp::_["spectrumID"]	= spectrumID,
-    Rcpp::_["SIR_ID"]	= SIR_ID,
-    Rcpp::_["SII_ID"]	= SII_ID,
     Rcpp::_["sequence"]	= seq,
     Rcpp::_["peptide_ref"]	= peptide_ref,
     Rcpp::_["name"]	= name,
